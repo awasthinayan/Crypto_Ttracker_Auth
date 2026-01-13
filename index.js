@@ -25,9 +25,13 @@ connectDB();
 
 app.use('/V1/api', Routes);
 
-app.get('/', (req, res) => {
-  res.send('Hello World the server is running');
+app.get("/debug/env", (req, res) => {
+  res.json({
+    brevo: process.env.BREVO_API_KEY ? "SET" : "NOT SET",
+    port: process.env.PORT,
+  });
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

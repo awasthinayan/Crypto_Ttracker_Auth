@@ -1,4 +1,12 @@
-import { loginService, resetPasswordService, sendOtpViaBrevoService, signUpService, verifyOTPService } from '../Service/UserService.js';
+
+import { findbyEmail } from '../Repository/UserRepo.js';
+import {
+  loginService,
+  resetPasswordService,
+  sendOtpViaBrevoService,
+  signUpService,
+  verifyOTPService
+} from '../Service/UserService.js';
 
 export const SignUpController = async (req, res) => {
   try {
@@ -59,7 +67,7 @@ export const LoginController = async (req, res) => {
     }
 
     // 2️⃣ Call service layer
-    const {user,token} = await loginService(req.body);
+    const { user, token } = await loginService(req.body);
 
     if (token?.error) {
       return res.status(401).json({
@@ -100,19 +108,26 @@ export const sendOTPController = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await findbyEmail({ email });
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      });
     }
 
     const result = await sendOtpViaBrevoService(email);
 
     if (result.success) {
-      return res.status(200).json({ message: "OTP sent successfully" });
+      return res.status(200).json({ message: 'OTP sent successfully' });
     } else {
-      return res.status(400).json({ message: "Failed to send OTP" });
+      return res.status(400).json({ message: 'Failed to send OTP' });
     }
   } catch (error) {
-    console.error("Error in sendOTPController:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error('Error in sendOTPController:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
