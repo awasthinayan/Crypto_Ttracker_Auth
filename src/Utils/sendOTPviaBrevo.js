@@ -1,4 +1,4 @@
-import Sib from "sib-api-v3-sdk";
+import * as Sib from "sib-api-v3-sdk";
 
 export const sendOtpViaBrevo = async (email, otp) => {
   try {
