@@ -2,8 +2,23 @@ import express from 'express';
 import { PORT } from './src/Config/serverConfig.js';
 import connectDB from './src/Config/DBConfig.js';
 import Routes from './src/Routes/UserRoute.js';
+import cors from 'cors';
 
 const app = express();
+
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://coin-gecko-tracker-f6ssnhbbg-nayan-awasthis-projects.vercel.app/'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+  })
+);
+
+app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
