@@ -1,4 +1,7 @@
-import * as Sib from "sib-api-v3-sdk";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+const Sib = require("sib-api-v3-sdk");
 
 export const sendOtpViaBrevo = async (email, otp) => {
   try {
