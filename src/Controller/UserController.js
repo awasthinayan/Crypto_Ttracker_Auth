@@ -111,7 +111,7 @@ export const sendOTPController = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    const user = await findbyEmail({ email });
+    const user = await findbyEmail(email);
     if (!user) {
       return res.status(404).json({
         message: 'User not found'

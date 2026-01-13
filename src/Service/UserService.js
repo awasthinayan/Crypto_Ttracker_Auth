@@ -1,4 +1,10 @@
-import { findbyEmail, saveOTP, updateUserPassword, UserDetails, verifyOTP } from '../Repository/UserRepo.js';
+import {
+  findbyEmail,
+  saveOTP,
+  updateUserPassword,
+  UserDetails,
+  verifyOTP
+} from '../Repository/UserRepo.js';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../Utils/jwt.js';
 import { sendOtpViaBrevo } from '../Utils/sendOTPviaBrevo.js';
@@ -52,50 +58,50 @@ export const loginService = async (data) => {
     }
 
     const token = generateToken({
-      id:user.id,
+      id: user.id,
       email: user.email
-    })
+    });
 
     return {
       token,
       user
-    }
+    };
   } catch (error) {
     console.error('UserService Error:', error.message);
     throw error;
   }
 };
 
-
 export const sendOtpViaBrevoService = async (email) => {
   try {
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(otp);
-    // Save OTP in DB via Repo
-    await saveOTP(email, otp);
+    console.log('Generated OTP:', otp);
 
-    // Send OTP mail
     const sent = await sendOtpViaBrevo(email, otp);
-    if (!sent) throw new Error("Failed to send OTP email");
+    if (!sent) {
+      return { success: false, message: 'Email sending failed' };
+    }
 
-    return { success: true, message: "OTP sent successfully" };
+    await saveOTP(email, otp); // ✅ save ONLY after email success
+
+    return { success: true, message: 'OTP sent successfully' };
   } catch (err) {
-    console.error("Error in sendOtpViaBrevoService:", err.message);
+    console.error('sendOtpViaBrevoService error:', err);
+    console.error('❌ Brevo FULL Error:');
+    console.error(err?.response?.data || err);
     return { success: false, message: err.message };
   }
 };
 
-
 export const verifyOTPService = async (email, otp) => {
   const existingUser = await verifyOTP(email, otp);
-  if (!existingUser) throw new Error("Invalid or expired OTP");
+  if (!existingUser) throw new Error('Invalid or expired OTP');
   console.log(existingUser);
-  return { message: "OTP verified successfully" };
+  return { message: 'OTP verified successfully' };
 };
 
 export const resetPasswordService = async (email, password) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   await updateUserPassword(email, hashedPassword);
-  return { message: "Password reset successful" };
+  return { message: 'Password reset successful' };
 };
