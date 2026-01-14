@@ -123,6 +123,7 @@ export const sendOTPController = async (req, res) => {
     if (result.success) {
       return res.status(200).json({ message: 'OTP sent successfully' });
     } else {
+      console.log(result);
       return res.status(400).json({ message: 'Failed to send OTP' });
     }
   } catch (error) {

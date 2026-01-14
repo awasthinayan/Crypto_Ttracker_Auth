@@ -1,39 +1,39 @@
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-const Sib = require('sib-api-v3-sdk');
+import nodemailer from "nodemailer";
 
 export const sendOtpViaBrevo = async (email, otp) => {
   try {
-    const client = Sib.ApiClient.instance;
-    const apiKey = client.authentications['api-key'];
-    apiKey.apiKey = process.env.BREVO_API_KEY; // ✅ from .env
-
-    console.log('BREVO KEY LOADED:', process.env.BREVO_API_KEY ? 'YES' : 'NO');
-    console.log('BREVO KEY:', process.env.BREVO_API_KEY.slice(0, 5));
-    console.log('OTP:', otp);
-
-    const tranEmailApi = new Sib.TransactionalEmailsApi();
-
-    const sender = {
-      email: 'nayanawasthi109@gmail.com', // must be verified in Brevo
-      name: "Nayan'sOrg"
-    };
-
-    const receivers = [{ email }];
-
-    await tranEmailApi.sendTransacEmail({
-      sender,
-      to: receivers,
-      subject: 'Your OTP Code',
-      textContent: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
-      htmlContent: `<h3>Your OTP Code: <strong>${otp}</strong></h3><p>It will expire in 5 minutes.</p>`
+    const transporter = nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: "apikey",
+        pass: process.env.BREVO_SMTP_KEY
+      }
     });
-    console.log(otp);
-    console.log('✅ OTP sent successfully via Brevo');
+
+    console.log(
+      "BREVO SMTP KEY LOADED:",
+      process.env.BREVO_SMTP_KEY ? "YES" : "NO"
+    );
+    console.log("OTP:", otp);
+
+    await transporter.sendMail({
+      from: `"Nayan'sOrg" <${process.env.BREVO_SMTP_EMAIL}>`,
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP code is ${otp}. It will expire in 5 minutes.`,
+      html: `
+        <h3>Your OTP Code</h3>
+        <h2>${otp}</h2>
+        <p>This OTP will expire in 5 minutes.</p>
+      `
+    });
+
+    console.log("✅ OTP sent successfully via Brevo SMTP");
     return true;
   } catch (err) {
-    console.error('❌ Error sending OTP:', err.message);
+    console.error("❌ Error sending OTP:", err.message);
     return false;
   }
 };
