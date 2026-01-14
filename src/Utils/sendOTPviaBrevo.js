@@ -8,13 +8,13 @@ export const sendOtpViaBrevo = async (email, otp) => {
       secure: false,
       auth: {
         user: "apikey",
-        pass: process.env.BREVO_SMTP_KEY
+        pass: process.env.BREVO_API_KEY
       }
     });
 
     console.log(
       "BREVO SMTP KEY LOADED:",
-      process.env.BREVO_SMTP_KEY ? "YES" : "NO"
+      process.env.BREVO_API_KEY ? "YES" : "NO"
     );
     console.log("OTP:", otp);
 
