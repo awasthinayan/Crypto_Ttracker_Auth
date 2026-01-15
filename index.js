@@ -3,6 +3,9 @@ import { PORT } from './src/Config/serverConfig.js';
 import connectDB from './src/Config/DBConfig.js';
 import Routes from './src/Routes/UserRoute.js';
 import cors from 'cors';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 

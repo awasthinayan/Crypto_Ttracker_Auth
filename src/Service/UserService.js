@@ -78,6 +78,8 @@ export const sendOtpViaBrevoService = async (email) => {
     console.log('Generated OTP:', otp);
 
     const sent = await sendOtpViaBrevo(email, otp);
+
+    console.log(sent);
     if (!sent) {
       return { success: false, message: 'Email sending failed' };
     }
