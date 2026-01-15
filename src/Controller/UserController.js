@@ -1,4 +1,3 @@
-import { findbyEmail } from '../Repository/UserRepo.js';
 import {
   loginService,
   resetPasswordService,
@@ -105,62 +104,36 @@ export const LoginController = async (req, res) => {
 export const sendOTPController = async (req, res) => {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email is required'
-      });
-    }
-
-    const user = await findbyEmail(email);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not registered'
-      });
-    }
+    if (!email) throw new Error('Email required');
 
     const result = await sendOtpViaBrevoService(email);
-
-    if (result.success) {
-      return res.status(200).json({
-        success: true,
-        message: 'OTP sent successfully'
-      });
-    } else {
-      console.log('Brevo Error:', result);
-      return res.status(400).json({
-        success: false,
-        message: 'Failed to send OTP'
-      });
-    }
-  } catch (error) {
-    console.error('Error in sendOTPController:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal Server Error'
-    });
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 };
 
 export const verifyOTPController = async (req, res) => {
   try {
     const { email, otp } = req.body;
+    if (!email || !otp) throw new Error('Email & OTP required');
+
+    console.log("in controller",email, otp);
     const result = await verifyOTPService(email, otp);
     res.status(200).json(result);
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: error.message });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 };
 
 export const resetPasswordController = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) throw new Error('Email & password required');
+
     const result = await resetPasswordService(email, password);
     res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 };

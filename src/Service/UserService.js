@@ -1,9 +1,8 @@
 import {
+  clearOTP,
   findbyEmail,
-  saveOTP,
-  updateUserPassword,
-  UserDetails,
-  verifyOTP
+  saveOTPData,
+  UserDetails
 } from '../Repository/UserRepo.js';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../Utils/jwt.js';
@@ -73,37 +72,74 @@ export const loginService = async (data) => {
 };
 
 export const sendOtpViaBrevoService = async (email) => {
-  try {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('Generated OTP:', otp);
+  const user = await findbyEmail(email);
+  if (!user) throw new Error('User not found');
 
-    const sent = await sendOtpViaBrevo(email, otp);
-
-    console.log(sent);
-    if (!sent) {
-      return { success: false, message: 'Email sending failed' };
-    }
-
-    await saveOTP(email, otp); // ✅ save ONLY after email success
-
-    return { success: true, message: 'OTP sent successfully' };
-  } catch (err) {
-    console.error('sendOtpViaBrevoService error:', err);
-    console.error('❌ Brevo FULL Error:');
-    console.error(err?.response?.data || err);
-    return { success: false, message: err.message };
+  // ⏳ resend cooldown (60 sec)
+  if (
+    user.otpLastSentAt &&
+    Date.now() - user.otpLastSentAt.getTime() < 60 * 1000
+  ) {
+    throw new Error('Please wait before requesting another OTP');
   }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpHash = await bcrypt.hash(otp, 10);
+
+  const sent = await sendOtpViaBrevo(email, otp);
+  if (!sent) throw new Error('Failed to send OTP');
+
+  await saveOTPData(user, otpHash);
+
+  return { message: 'OTP sent successfully' };
 };
 
+/* ================= VERIFY OTP ================= */
+
 export const verifyOTPService = async (email, otp) => {
-  const existingUser = await verifyOTP(email, otp);
-  if (!existingUser) throw new Error('Invalid or expired OTP');
-  console.log(existingUser);
+  const user = await findbyEmail(email);
+
+  console.log('in service', user);
+
+  if (!user || !user.otpHash) {
+    throw new Error('Invalid or expired OTP');
+  }
+
+  if (user.otpExpires < new Date()) {
+    await clearOTP(user);
+    throw new Error('OTP expired');
+  }
+
+  if (user.otpAttempts >= 3) {
+    await clearOTP(user);
+    throw new Error('Too many attempts. Request new OTP');
+  }
+
+  const isMatch = await bcrypt.compare(otp, user.otpHash);
+  if (!isMatch) {
+    user.otpAttempts += 1;
+    await user.save();
+    throw new Error('Invalid OTP');
+  }
+
+  // ✅ OTP verified
+  user.otpVerified = true;
+  await clearOTP(user);
+
   return { message: 'OTP verified successfully' };
 };
 
+/* ================= RESET PASSWORD ================= */
+
 export const resetPasswordService = async (email, password) => {
-  const hashedPassword = await bcrypt.hash(password, 10);
-  await updateUserPassword(email, hashedPassword);
+  const user = await findbyEmail(email);
+  if (!user || !user.otpVerified) {
+    throw new Error('OTP verification required');
+  }
+
+  user.password = await bcrypt.hash(password, 10);
+  user.otpVerified = false; // reset flag
+  await user.save();
+
   return { message: 'Password reset successful' };
 };

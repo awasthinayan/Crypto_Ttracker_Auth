@@ -15,7 +15,27 @@ const userAuthSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: true
+    },
+    otpExpires: {
+      type: Date,
+      default: null
+    },
+    otpAttempts: {
+      type: Number,
+      default: 0
+    },
+    otpVerified: {
+      type: Boolean,
+      default: false
+    },
+    otpLastSentAt: {
+      type: Date,
+      default: null
+    },
+    otpHash: {
+      type: String,
+      default: null
     }
   },
   { timestamps: true }

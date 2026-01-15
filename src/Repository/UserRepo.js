@@ -16,33 +16,20 @@ export const findbyEmail = async (email) => {
     console.log(error);
     throw error;
   }
-};  
-
-
-export const saveOTP = async (email, otp) => {
-  const existingUser = await user.findOne({ email });
-  if (!existingUser) {
-    return { error: "User not found" };
-  }
-  console.log(existingUser);
-  existingUser.otp = otp;
-  existingUser.otpExpires = Date.now() + 5 * 60 * 1000; // valid for 5 minutes
-  await existingUser.save();
 };
 
-export const verifyOTP = async (email, otp) => {
-  const existingUser = await user.findOne({
-    email,
-    otp,
-    otpExpires: { $gt: Date.now() },
-  });
-  return existingUser;
+export const saveOTPData = async (userDoc, otpHash) => {
+  userDoc.otpHash = otpHash;
+  userDoc.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+  userDoc.otpAttempts = 0;
+  userDoc.otpVerified = false;
+  userDoc.otpLastSentAt = new Date();
+  await userDoc.save();
 };
 
-export const updateUserPassword = async (email, hashedPassword) => {
-  const existingUser = await user.findOne({ email });
-  existingUser.password = hashedPassword;
-  existingUser.otp = undefined;
-  existingUser.otpExpires = undefined;
-  await existingUser.save();
+export const clearOTP = async (userDoc) => {
+  userDoc.otpHash = null;
+  userDoc.otpExpires = null;
+  userDoc.otpAttempts = 0;
+  await userDoc.save();
 };
