@@ -14,7 +14,7 @@ app.use(
     origin: [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://coin-gecko-tracker-5wbuodukd-nayan-awasthis-projects.vercel.app/'
+      'https://coin-gecko-tracker-5wbuodukd-nayan-awasthis-projects.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 connectDB();
 
-app.use('/V1/api', Routes);
+app.use('/v1/api', Routes);
 
 app.get("/debug/env", (req, res) => {
   res.json({
