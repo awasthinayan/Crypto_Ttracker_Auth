@@ -14,7 +14,7 @@ app.use(
     origin: [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://coin-gecko-tracker-f6ssnhbbg-nayan-awasthis-projects.vercel.app/'
+      'https://coin-gecko-tracker-5wbuodukd-nayan-awasthis-projects.vercel.app/'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
