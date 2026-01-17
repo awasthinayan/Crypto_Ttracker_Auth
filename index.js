@@ -14,12 +14,15 @@ app.use(
     origin: [
       'http://localhost:5173',
       'http://localhost:3000',
+      'https://coin-gecko-tracker-rho.vercel.app',
       'https://coin-gecko-tracker-p74jhdlv1-nayan-awasthis-projects.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
   })
 );
+
+app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -28,13 +31,12 @@ connectDB();
 
 app.use('/v1/api', Routes);
 
-app.get("/debug/env", (req, res) => {
+app.get('/debug/env', (req, res) => {
   res.json({
-    brevo: process.env.BREVO_API_KEY ? "SET" : "NOT SET",
-    port: process.env.PORT,
+    brevo: process.env.BREVO_API_KEY ? 'SET' : 'NOT SET',
+    port: process.env.PORT
   });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
