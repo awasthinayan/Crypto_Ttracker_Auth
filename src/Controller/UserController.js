@@ -80,8 +80,7 @@ export const LoginController = async (req, res) => {
       status: true,
       data: {
         id: user._id,
-        email: user.email,
-        name:user.name
+        email: user.email
       },
       token
     });
